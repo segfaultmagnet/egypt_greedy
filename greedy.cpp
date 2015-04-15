@@ -11,6 +11,7 @@ fractions, e.g.
 
 #ifndef DEBUG
 #define DEBUG true
+#define OUTPUT(x) std::cout << #x << '=' << (x) << std::endl;
 #endif
 
 #define AUTHOR "Matthew Sheridan"
@@ -22,6 +23,7 @@ fractions, e.g.
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include "BigIntegerLibrary.hh"
 #include "dlist.h"
 #include "logic.h"
 
@@ -36,8 +38,8 @@ void usage();
 void version();
 
 int main(int argc, char* argv[]) {
-  long long x, y;
-  sherim_data::dlist<long long>* denoms = new sherim_data::dlist<long long>();
+  BigInteger x, y;
+  sherim_data::dlist<BigInteger>* denoms = new sherim_data::dlist<BigInteger>();
 
   // Parse all args.
   try {
@@ -57,14 +59,14 @@ int main(int argc, char* argv[]) {
       // Check numerator and denominator.
       if (!sherim_logic::isInt(temp))
         throw std::invalid_argument(INVALID_ARGS_POS_INT);
-      long long foo = std::strtol(temp.c_str(), 0, 10);
+      BigInteger foo = BigInteger(std::strtol(temp.c_str(), 0, 10));
       if (foo < 1)
         throw std::invalid_argument(INVALID_ARGS_POS_INT);
 
       if (i == 1)
-        x = foo;
+        x = BigInteger(foo);
       else
-        y = foo;
+        y = BigInteger(foo);
     }
     // Enforce x < y.
     if (x >= y)
@@ -83,8 +85,8 @@ int main(int argc, char* argv[]) {
 
   try {
     // Expand this fraction.
-    sherim_logic::greedy(x, y, denoms);
-    sherim_data::ditr<long long> i = denoms->begin();
+    sherim_logic::greedy<BigInteger>(x, y, denoms);
+    sherim_data::ditr<BigInteger> i = denoms->begin();
 
     // Iterate through results and print.
     if (i != NULL) {
@@ -93,7 +95,7 @@ int main(int argc, char* argv[]) {
       while (i != NULL) {
         if (comma)
           cout << ", ";
-        cout << "1/" << (long long)*i;
+        cout << "1/" << (BigInteger)*i;
         comma = true;
         ++i;
       }
