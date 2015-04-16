@@ -1,37 +1,39 @@
-# Lab 4
-CXX=g++
-CXXFLAGS=-std=gnu++11
-SRC=greedy.cpp
-BIGINT_DIR=$(GIT_REPOS)/bigint
-DATA_DIR=$(GIT_REPOS)/sherim_data
-LOGIC_DIR=$(GIT_REPOS)/sherim_logic
-# BIGINT=$(BIGINT_DIR)/BigIntegerLibrary.o
-BIGINT_O= \
-	BigUnsigned.o \
-	BigInteger.o \
-	BigIntegerAlgorithms.o \
-	BigUnsignedInABase.o \
-	BigIntegerUtils.o \
-BIGINT_H= \
-	NumberlikeArray.hh \
-	BigUnsigned.hh \
-	BigInteger.hh \
-	BigIntegerAlgorithms.hh \
-	BigUnsignedInABase.hh \
-	BigIntegerLibrary.hh \
-DATA=$(DATA_DIR)/dlist.h
-LOGIC=$(LOGIC_DIR)/logic.h
+# Egypt Greedy
+bigint_dir	= $(GIT_REPOS)/bigint
+data_dir	= $(GIT_REPOS)/sherim_data
+logic_dir	= $(GIT_REPOS)/sherim_logic
 
-all:
+bigint_obj	= \
+		$(bigint_dir)/BigUnsigned.o \
+		$(bigint_dir)/BigInteger.o \
+		$(bigint_dir)/BigIntegerAlgorithms.o \
+		$(bigint_dir)/BigUnsignedInABase.o \
+		$(bigint_dir)/BigIntegerUtils.o \
 
-greedy:	$(SRC) $(BIGINT_DIR)/$(BIGINT_LIB) $(DATA) $(LOGIC)
-	$(CXX) $(CXXFLAGS) -o greedy $(SRC) -I$(BIGINT_DIR) -I$(DATA_DIR) -I$(LOGIC_DIR)
+bigint_head	= \
+		$(bigint_dir)/NumberlikeArray.hh \
+		$(bigint_dir)/BigUnsigned.hh \
+		$(bigint_dir)/BigInteger.hh \
+		$(bigint_dir)/BigIntegerAlgorithms.hh \
+		$(bigint_dir)/BigUnsignedInABase.hh \
+		$(bigint_dir)/BigIntegerLibrary.hh \
 
-BIGINT_LIB:     $(BIGINT_O)
-BIGINT_O:       $(BIGINT_H)
+data=$(data_dir)/dlist.h
+logic=$(logic_dir)/logic.h
 
-# $(BIGINT):
-# 	make $(BIGINT_DIR)/Makefile
+all:	greedy
+
+%o:	%.cc
+	g++ -std=gnu++11 -c $<
+
+ $(bigint_obj):	$(bigint_head)
+bigint_lib:	$(bigint_obj)
+
+greedy.o:	greedy.cpp bigint_lib $(data) $(logic)
+	g++ -std=gnu++11 -c greedy.cpp -I$(bigint_dir) -I$(data_dir) -I$(logic_dir)
+
+greedy: greedy.o $(bigint_head) $(data) $(logic)
+	g++ -std=gnu++11 -o $@ greedy.o $(bigint_obj) $(bigint_lib) -I$(bigint_dir) -I$(data_dir) -I$(logic_dir)
 
 clean:
-	rm *.exe
+	rm -f *.exe

@@ -43,3 +43,5 @@ Temporary Items
 .apdisk
 *.cpp~
 result
+*.o
+greedy.exe
