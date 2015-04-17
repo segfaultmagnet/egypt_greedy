@@ -10,7 +10,9 @@ fractions, e.g.
 */
 
 #ifndef DEBUG
-#define DEBUG true
+#define DEBUG false
+#endif
+#ifndef OUTPUT(x)
 #define OUTPUT(x) std::cout << #x << '=' << (x) << std::endl;
 #endif
 
@@ -21,6 +23,7 @@ fractions, e.g.
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include "BigIntegerLibrary.hh"
@@ -33,13 +36,16 @@ using std::string;
 
 const string INVALID_ARGS_POS_INT = "Arguments x, y must be non-zero, non-negative integers where x < y.";
 
+template<class T> std::string formatNumber(const T n);
 void help();
 void usage();
 void version();
 
+typedef BigInteger B;
+
 int main(int argc, char* argv[]) {
-  BigInteger x, y;
-  sherim_data::dlist<BigInteger>* denoms = new sherim_data::dlist<BigInteger>();
+  B x, y;
+  sherim_data::dlist<B>* denoms = new sherim_data::dlist<B>();
 
   // Parse all args.
   try {
@@ -47,7 +53,7 @@ int main(int argc, char* argv[]) {
     if (argc < 2 || argc > 3)
       throw std::invalid_argument("");
 
-    for (int i = 1; i < argc; ++i) {
+    for (unsigned int i = 1; i < argc; ++i) {
       string temp = argv[i];
 
       // Help option.
@@ -59,59 +65,79 @@ int main(int argc, char* argv[]) {
       // Check numerator and denominator.
       if (!sherim_logic::isInt(temp))
         throw std::invalid_argument(INVALID_ARGS_POS_INT);
-      BigInteger foo = BigInteger(std::strtol(temp.c_str(), 0, 10));
+      B foo = B(std::strtol(temp.c_str(), 0, 10));
       if (foo < 1)
         throw std::invalid_argument(INVALID_ARGS_POS_INT);
 
+      // First arg is numerator, second is denominator.
       if (i == 1)
-        x = BigInteger(foo);
+        x = B(foo);
       else
-        y = BigInteger(foo);
+        y = B(foo);
     }
     // Enforce x < y.
     if (x >= y)
       throw std::invalid_argument(INVALID_ARGS_POS_INT);
   } catch (std::invalid_argument e) {
     usage();
-    std::string error = e.what();
-
-    if (error.length() > 0)
-      cout << endl << error << endl;
+    std::string errmsg = e.what();
+    if (errmsg.length() > 0)
+      cout << endl << errmsg << endl;
     return EXIT_FAILURE;
   } catch (std::exception e) {
-    cout << e.what() << endl;
+    cout << "ERROR:" << endl
+         << e.what() << endl;
     return EXIT_FAILURE;
   }
 
   try {
     // Expand this fraction.
-    sherim_logic::greedy<BigInteger>(x, y, denoms);
-    sherim_data::ditr<BigInteger> i = denoms->begin();
+    sherim_logic::greedy<B>(x, y, denoms);
+    sherim_data::ditr<B> i = denoms->begin();
 
     // Iterate through results and print.
     if (i != NULL) {
-      cout << x << '/' << y << " is the sum of:" << endl;
-      bool comma = false;
+      cout << x << '/' << y << " can be expressed as the sum of "
+           << denoms->size() << " fractions:" << endl << endl;
       while (i != NULL) {
-        if (comma)
-          cout << ", ";
-        cout << "1/" << (BigInteger)*i;
-        comma = true;
+        B foo = (B)*i;
+        string bar = formatNumber<B>(foo);
+        cout << "1/" << bar << endl;
         ++i;
       }
-      cout << endl;
     } else {
       cout << "No fractions found." << endl;
     }
   } catch (std::overflow_error e) {
     // Catch overflow errors caused by numbers too complex to handle with long long data type.
-    cout << e.what() << endl
+    cout << "ERROR:" << endl
+         << e.what() << endl
          << "Fraction denominator too long for data type. Try another." << endl;
   } catch (std::exception e) {
-    cout << e.what() << endl;
+    cout << "ERROR:" << endl
+         << e.what() << endl;
   }
 
   return EXIT_SUCCESS;
+}
+
+// Post: Returns a string represenation of some number n, with white space between groups of five digits.
+template<class T>
+std::string formatNumber(const T n) {
+  std::ostringstream foo;
+  foo << n;
+  std::string bar = foo.str();
+  std::string result = "";
+
+  for (long i = bar.length() - 1; i >= 0; --i) {
+    result = bar[i] + result;
+    if (i > 0 && (bar.length() - i) % 5 == 0)
+      result = ' ' + result;
+  }
+  if (n < 0)
+    result = '-' + result;
+
+  return result;
 }
 
 // Post: Prints usage along with Barney-style instructions.
