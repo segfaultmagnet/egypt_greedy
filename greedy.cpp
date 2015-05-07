@@ -153,6 +153,6 @@ void help() {
 // Post: Print usage.
 void usage() {
   cout << "Usage:" << endl
-       << "  lab4 <numerator> <denominator>" << endl
-       << "  Try 'lab4 --help' for more information." << endl;
+       << "  greedy <numerator> <denominator>" << endl
+       << "  Try 'greedy --help' for more information." << endl;
 }
