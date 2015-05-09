@@ -79,43 +79,50 @@ int main(int argc, char* argv[]) {
     if (x >= y)
       throw std::invalid_argument(INVALID_ARGS_POS_INT);
   } catch (std::invalid_argument e) {
+    // Handle problems with arguments.
     usage();
     std::string errmsg = e.what();
     if (errmsg.length() > 0)
       cout << endl << errmsg << endl;
     return EXIT_FAILURE;
   } catch (std::exception e) {
-    cout << "ERROR:" << endl
+    // Catch-all.
+    cout << "Error:" << endl
          << e.what() << endl;
     return EXIT_FAILURE;
   }
 
+  // Expand this fraction.
   try {
-    // Expand this fraction.
     sherim_logic::greedy<B>(x, y, denoms);
-    sherim_data::ditr<B> i = denoms->begin();
-
-    // Iterate through results and print.
-    if (i != NULL) {
-      cout << x << '/' << y << " can be expressed as the sum of "
-           << denoms->size() << " fractions:" << endl << endl;
-      while (i != NULL) {
-        B foo = (B)*i;
-        string bar = formatNumber<B>(foo);
-        cout << "1/" << bar << endl;
-        ++i;
-      }
-    } else {
-      cout << "No fractions found." << endl;
-    }
   } catch (std::overflow_error e) {
-    // Catch overflow errors caused by numbers too complex to handle with long long data type.
-    cout << "ERROR:" << endl
+    // Catch overflow errors caused by numbers too large to handle with data type.
+    cout << "Overflow error:" << endl
          << e.what() << endl
          << "Fraction denominator too long for data type. Try another." << endl;
-  } catch (std::exception e) {
-    cout << "ERROR:" << endl
+  } catch (std::domain_error e) {
+    // Catch domain errors in greedy expansion.
+    cout << "Domain error:" << endl
          << e.what() << endl;
+  } catch (std::exception e) {
+    // Catch-all.
+    cout << "Error:" << endl
+         << e.what() << endl;
+  }
+
+  // Iterate through results and print.
+  sherim_data::ditr<B> i = denoms->begin();
+  if (i != NULL) {
+    cout << x << '/' << y << " can be expressed as the sum of "
+         << denoms->size() << " fractions:" << endl << endl;
+    while (i != NULL) {
+      B foo = (B)*i;
+      string bar = formatNumber<B>(foo);
+      cout << "1/" << bar << endl;
+      ++i;
+    }
+  } else {
+    cout << "No fractions found." << endl;
   }
 
   return EXIT_SUCCESS;
@@ -131,7 +138,7 @@ std::string formatNumber(const T n) {
 
   for (long i = bar.length() - 1; i >= 0; --i) {
     result = bar[i] + result;
-    if (i > 0 && (bar.length() - i) % 5 == 0)
+    if (i > 0 && (bar.length() - i) % 3 == 0)
       result = ' ' + result;
   }
   if (n < 0)
@@ -142,10 +149,13 @@ std::string formatNumber(const T n) {
 
 // Post: Prints usage along with Barney-style instructions.
 void help() {
-  cout << "Lab 4: Egyptian fractions" << endl << endl
-       << "Evaluates the greedy Egyptian expansion of a fraction x/y, where x < y. "
-       << "Requires two non-zero, non-negative integers as arguments, for numerator and "
-       << "denominator, respectively." << endl << endl;
+  cout << "Greedy algorithm for the expansion of Egyptian fractions:" << endl << endl
+       << "This program evaluates the greedy Egyptian expansion of a fraction x/y, where x < y. "
+       << "Two non-zero, non-negative integers are requiredas arguments, representing the numerator "
+       << "and denominator, respectively. "
+       << "This fraction is reduced to a series of unit fractions (fractions with a numerator equal to "
+       << "1, and positive integer denominator), whose sum is equal to the original."
+       << endl << endl;
 
   usage();
 }
