@@ -36,9 +36,9 @@ deps		= \
 
 src		= greedy.cpp
 
-all:	greedy
+all:	greedy.exe
 
-greedy: $(src) $(deps)
+greedy.exe:	$(src) $(deps)
 	$(cxx) $(cxxflags) -o $@ $(src) $(deps) -I$(bigint_dir) -I$(data_dir) -I$(logic_dir)
 
 clean:
